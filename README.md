@@ -52,9 +52,25 @@ We can inform users about the sentiment scores assigned to each class by model. 
 If the documents are PDF we can use OCR or othe image analysis approach to extract necessary data. The EPAR documents has specific structure, by verifying the ones that where added to the homework folder I can say that table of contents are mostly the same. If know in which sections are the most relevant data we can focus on it by extracting the nessary information.
 
 **How could an architecture (preferably in the cloud) to industrialize the sentiment analysis model look like?**
-What could go wrong in the long run once the model is deployed and used on live data?
-What tools and methodologies would be helpful to deploy and maintain the model in the long run?
 
+It depends if want to customize a lot of things or we want to go with some simplest solutions. We can use AWS Gateway with AWS ECS, K8S Pods and deployed services as containers. Examples, suppose each service is on ECS:
+- Front/Backend API Services -> ML Proxy API (FastAPI) Service -> ModelAPI Service -> S3 storage with model registry // scalability handled by AWS
+- Front/Backend API Services -> Triton Server Service// scalability handled by AWS, required custom metrics to let LB know how to scale
+- Front/Backend API Services -> Proxy API Producer Service -> Broker Service -> Consumer Service with Model // // scalability handled by AWS, need to add custom metric related to Broker queue size for LB
+
+
+**What could go wrong in the long run once the model is deployed and used on live data?**
+
+Model will become old enough that for the new data will be useless. 
+The data will be wrongly classified with high confidence from the model side, so it won't be visible uncertaintity in model results/logs.
+
+**What tools and methodologies would be helpful to deploy and maintain the model in the long run?**
+
+Tools: MLflow, BentoML, Amazon Sagemaker, DVC 
+Methodology: Contenarization, CI/CD, A/B tests. We can go with different strategies of how new models should be available for the usage:
+- New and old model handle requests but only old send response to the user, New model is under validation
+- Similar as above but some samples of the new model responses are sent back to the users
+- Deploy new model to services but do not kill old instances before the new ones are registered by LB
 
 </p>
 
